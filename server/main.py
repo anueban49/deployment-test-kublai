@@ -26,7 +26,13 @@ from api.saved import router as saved_router
 from api.search import router as search_router
 from api.telegram_link import router as telegram_link_router
 from api.telegram_webhook import router as telegram_webhook_router
-from config import TELEGRAM_WEBHOOK_SECRET, TG_BOT_TOKEN, WEBHOOK_BASE_URL
+from config import (
+    CORS_ORIGIN_REGEX,
+    CORS_ORIGINS,
+    TELEGRAM_WEBHOOK_SECRET,
+    TG_BOT_TOKEN,
+    WEBHOOK_BASE_URL,
+)
 from services import tg_bot
 
 logging.basicConfig(
@@ -81,7 +87,8 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=CORS_ORIGINS,
+    allow_origin_regex=CORS_ORIGIN_REGEX,
     allow_methods=["*"],
     allow_headers=["*"],
 )

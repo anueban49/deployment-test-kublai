@@ -23,8 +23,22 @@ TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")
 # (normally the username is read from the live bot).
 TG_BOT_USERNAME = os.getenv("TG_BOT_USERNAME")
 # Where the web UI lives; the bot sends unverified users here to sign in and
-# connect their Telegram.
-WEB_APP_URL = os.getenv("WEB_APP_URL", "http://localhost:5173")
+# connect their Telegram. Defaults to the deployed Vercel app; override with
+# WEB_APP_URL=http://localhost:5173 for local dev.
+WEB_APP_URL = os.getenv("WEB_APP_URL", "https://deployment-test-kublai.vercel.app")
+
+# Browser origins allowed to call this API (CORS). Comma-separated override via
+# CORS_ORIGINS; defaults cover local dev plus the deployed web app. The regex
+# additionally allows Vercel preview deployments.
+CORS_ORIGINS = [
+    o.strip()
+    for o in os.getenv(
+        "CORS_ORIGINS",
+        f"http://localhost:5173,http://localhost:5174,{WEB_APP_URL}",
+    ).split(",")
+    if o.strip()
+]
+CORS_ORIGIN_REGEX = os.getenv("CORS_ORIGIN_REGEX", r"https://.*\.vercel\.app")
 
 # Delivery mode. With a public HTTPS base URL the bot registers a webhook (the
 # right model for a single web service like Render — no getUpdates polling, so
@@ -72,8 +86,12 @@ QPAY_BASE_URL = os.getenv("QPAY_BASE_URL", "https://merchant-sandbox.qpay.mn")
 QPAY_CLIENT_ID = os.getenv("QPAY_CLIENT_ID")
 QPAY_CLIENT_SECRET = os.getenv("QPAY_CLIENT_SECRET")  # server-side ONLY
 QPAY_INVOICE_CODE = os.getenv("QPAY_INVOICE_CODE")
-# Must be publicly reachable for QPay's payment callback (e.g. an ngrok URL in dev).
-PUBLIC_BASE_URL = os.getenv("PUBLIC_BASE_URL", "http://localhost:8000")
+# Must be publicly reachable for QPay's payment callback. Defaults to the Render
+# backend; override with PUBLIC_BASE_URL=http://localhost:8000 (or an ngrok URL)
+# for local dev.
+PUBLIC_BASE_URL = os.getenv(
+    "PUBLIC_BASE_URL", "https://deployment-test-kublai.onrender.com"
+)
 # Price of the Essentials membership, in MNT.
 ESSENTIALS_PRICE_MNT = int(os.getenv("ESSENTIALS_PRICE_MNT", "10000"))
 
