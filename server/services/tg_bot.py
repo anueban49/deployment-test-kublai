@@ -904,9 +904,16 @@ _background_tasks: list[asyncio.Task] = []
 # payments router) use it to notify users; None until the bot is up.
 _bot: Bot | None = None
 
+# The built Application, so the webhook route can push updates onto its queue.
+_application: "Application | None" = None
+
 
 def get_bot() -> Bot | None:
     return _bot
+
+
+def get_application() -> "Application | None":
+    return _application
 
 
 def get_bot_username() -> str | None:
@@ -925,7 +932,9 @@ async def _post_init(app: Application) -> None:
 
 
 def build_app(token: str) -> Application:
+    global _application
     app = Application.builder().token(token).post_init(_post_init).build()
+    _application = app
     # Group -1 runs before the default group: every update gets logged even if
     # a later handler picks it up (or none does).
     app.add_handler(TypeHandler(Update, log_incoming), group=-1)

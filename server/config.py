@@ -26,6 +26,22 @@ TG_BOT_USERNAME = os.getenv("TG_BOT_USERNAME")
 # connect their Telegram.
 WEB_APP_URL = os.getenv("WEB_APP_URL", "http://localhost:5173")
 
+# Delivery mode. With a public HTTPS base URL the bot registers a webhook (the
+# right model for a single web service like Render — no getUpdates polling, so
+# no "terminated by other getUpdates" 409s). Without one it falls back to
+# long-polling, which is convenient for local dev. Render injects
+# RENDER_EXTERNAL_URL automatically; WEBHOOK_BASE_URL overrides it.
+WEBHOOK_BASE_URL = (
+    os.getenv("WEBHOOK_BASE_URL") or os.getenv("RENDER_EXTERNAL_URL") or ""
+).rstrip("/")
+# Secret Telegram echoes back in the X-Telegram-Bot-Api-Secret-Token header so
+# we can reject forged webhook calls. Derived from the bot token if unset.
+TELEGRAM_WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
+if not TELEGRAM_WEBHOOK_SECRET and TG_BOT_TOKEN:
+    import hashlib
+
+    TELEGRAM_WEBHOOK_SECRET = hashlib.sha256(TG_BOT_TOKEN.encode()).hexdigest()[:32]
+
 # --- Google Gemini (google-genai) ---
 GENAI_API_KEY = os.getenv("GENAI_API_KEY")
 GENAI_MODEL = os.getenv("GENAI_MODEL", "gemini-2.5-flash")
