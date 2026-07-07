@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+httpx
+python-dotenv
+apify-client
+supabase
+google-genai
+openai
+python-telegram-bot

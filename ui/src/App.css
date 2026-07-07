@@ -1,0 +1,404 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  align-items: center;
+  justify-content: center;
+}
+
+.google-btn,
+.primary,
+.secondary {
+  font: inherit;
+  font-size: 16px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.google-btn,
+.primary {
+  color: var(--accent);
+  background: var(--accent-bg);
+}
+
+.secondary {
+  color: var(--text-h);
+  background: transparent;
+  border-color: var(--border);
+}
+
+.google-btn:hover,
+.primary:hover:not(:disabled),
+.secondary:hover:not(:disabled) {
+  border-color: var(--accent-border);
+}
+
+.primary:disabled,
+.secondary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Payment page */
+.kicker {
+  color: var(--accent);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.payment h1 {
+  margin-top: 8px;
+}
+
+.muted {
+  color: var(--text);
+  font-size: 15px;
+}
+
+.benefits {
+  list-style: none;
+  margin: 20px 0 28px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+.panel {
+  width: fit-content;
+  margin-top: 8px;
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.panel.success {
+  text-align: center;
+}
+
+.amount {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.qr {
+  width: 100%;
+  max-width: 256px;
+  align-self: center;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.link {
+  font-size: 15px;
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.error {
+  margin-top: 16px;
+  color: #e5484d;
+  font-size: 15px;
+}
+
+/* Plain username / phone sign-in */
+.plain-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: stretch;
+}
+
+.auth-switch {
+  display: flex;
+  gap: 8px;
+}
+
+.plain-auth input {
+  font: inherit;
+  font-size: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.plain-auth input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.plain-auth .error {
+  margin-top: 0;
+}
+
+.linklike {
+  font-size: 14px;
+  color: var(--accent);
+  cursor: pointer;
+  text-align: center;
+}
+
+.linklike:hover {
+  text-decoration: underline;
+}
+
+/* Dashboard */
+.dash {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-h);
+  text-decoration: none;
+}
+
+.invite {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tg-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: inherit;
+  font-size: 15px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid transparent;
+  color: #fff;
+  background: #229ed9; /* Telegram blue */
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.tg-btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+.tg-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.dash-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 24px;
+}
+
+/* Telegram linking */
+.tg-link {
+  margin-bottom: 24px;
+  padding: 16px;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.tg-linked {
+  margin-bottom: 24px;
+  font-size: 15px;
+  color: var(--text-h);
+}
+
+/* "Invite the bot" popover, shown when a signed-in user hasn't linked yet */
+.invite-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 50;
+}
+
+.invite-popover {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 28px 24px;
+  max-width: 380px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+.invite-popover h2 {
+  margin: 0;
+  font-size: 19px;
+  color: var(--text-h);
+}
+
+.invite-later {
+  font: inherit;
+  font-size: 14px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Dashboard settings cards */
+.dash-body .card {
+  width: 100%;
+  max-width: 560px;
+  text-align: left;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.card h2 {
+  margin: 0;
+  font-size: 17px;
+  color: var(--text-h);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.field > label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.row input {
+  flex: 1;
+  font: inherit;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.row input:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.done {
+  margin: 0;
+  color: var(--text-h);
+  font-size: 15px;
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.settings-row p {
+  margin: 4px 0 0;
+}
+
+.switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.item-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.item-list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.saved-text {
+  min-width: 0;
+  font-size: 14px;
+  color: var(--text-h);
+}
+
+.secondary.danger {
+  font-size: 13px;
+  padding: 6px 10px;
+  border-color: var(--border);
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.secondary.danger:hover {
+  border-color: #e5484d;
+  color: #e5484d;
+}
