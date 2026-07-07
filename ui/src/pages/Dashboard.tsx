@@ -4,7 +4,7 @@ import "../App.css";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../lib/supabaseClient";
 
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL!;
 
 async function authedFetch(path: string, init: RequestInit = {}) {
   const {
