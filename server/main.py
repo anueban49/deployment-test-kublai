@@ -95,8 +95,11 @@ app.include_router(telegram_webhook_router)
 app.include_router(account_router)
 
 
+@app.get("/")
 @app.get("/health")
 async def health():
+    # `/` doubles as the default health-check target so Render's probe (a GET/
+    # HEAD on the root) succeeds instead of 404ing. HEAD is auto-handled for GET.
     return {"status": "ok"}
 
 
