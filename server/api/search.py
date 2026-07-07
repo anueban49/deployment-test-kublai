@@ -4,7 +4,7 @@ from datetime import datetime
 from apify_client import ApifyClient
 from fastapi import APIRouter, HTTPException, Query
 
-from config import APIFY_API_TOKEN
+from config import APIFY_API_TOKEN, FB_SEARCH_MAX_POSTS
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ router = APIRouter()
 
 client = ApifyClient(APIFY_API_TOKEN)
 
-ACTOR_ID = "apify/facebook-groups-scraper"
+ACTOR_ID = "danek/facebook-search-ppr"
 
 
 def _to_unix(value) -> int | None:
@@ -67,12 +67,17 @@ def _simplify(item: dict) -> dict:
 def get_group_posts(
     group_id: str = Query(..., description="Facebook group id to fetch posts from"),
     query: str = Query("", description="Optional text to filter the posts by"),
+    max_posts: int = Query(None, ge=1, le=100, description="Max posts to fetch"),
 ):
-    logger.info("Running Apify group scraper: group_id=%r query=%r", group_id, query)
+    max_posts = max_posts or FB_SEARCH_MAX_POSTS
+    logger.info(
+        "Running Apify group scraper: group_id=%r query=%r max_posts=%d",
+        group_id, query, max_posts,
+    )
 
     run_input = {
         "startUrls": [{"url": f"https://www.facebook.com/groups/{group_id}"}],
-        "resultsLimit": 20,
+        "resultsLimit": max_posts,
         "viewOption": "CHRONOLOGICAL",
     }
 

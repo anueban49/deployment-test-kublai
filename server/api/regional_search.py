@@ -71,7 +71,7 @@ def search_posts(
         "query": keyword,
         "search_type": "posts",
         "max_posts": max_posts,
-        "recent_posts": recent_only,
+        "recent_posts": True,
         "location": location,
     }
 

@@ -57,7 +57,9 @@ from config import (
     AUTO_FETCH_WINDOW_HOURS,
     BASIC_WEEKLY_REQUESTS,
     ESSENTIALS_HOURLY_REQUESTS,
+    ESSENTIALS_MAX_POSTS,
     FB_SEARCH_LOCATION,
+    FB_SEARCH_MAX_POSTS,
     STALE_POST_DAYS,
     TG_BOT_TOKEN,
     UB_UTC_OFFSET_HOURS,
@@ -153,13 +155,17 @@ async def _save_buyers(buyers: list[dict], group_id: str | None = None) -> int:
         return 0
 
 
-async def fetch_group_posts(group_id: str, keyword: str) -> list[dict]:
-    result = await asyncio.to_thread(get_group_posts, group_id=group_id, query=keyword)
+async def fetch_group_posts(
+    group_id: str, keyword: str, max_posts: int | None = None
+) -> list[dict]:
+    result = await asyncio.to_thread(
+        get_group_posts, group_id=group_id, query=keyword, max_posts=max_posts
+    )
     return result.get("posts", [])
 
 
-async def fetch_regional_posts(keyword: str) -> list[dict]:
-    result = await asyncio.to_thread(get_regional_posts, keyword)
+async def fetch_regional_posts(keyword: str, max_posts: int | None = None) -> list[dict]:
+    result = await asyncio.to_thread(get_regional_posts, keyword, max_posts=max_posts)
     return result.get("posts", [])
 
 
@@ -349,6 +355,20 @@ async def _check_quota(update: Update) -> bool:
     return True
 
 
+async def _max_posts_for(user_id: str) -> int:
+    """Per-request scrape budget by plan: Essentials users get
+    ESSENTIALS_MAX_POSTS, everyone else the FB_SEARCH_MAX_POSTS default. Fails
+    open to the default on DB errors, same reasoning as _require_verified."""
+    try:
+        db_user = await asyncio.to_thread(repo.get_user, user_id)
+    except Exception:
+        logger.exception("Plan lookup for max_posts failed; using default")
+        return FB_SEARCH_MAX_POSTS
+    if (db_user or {}).get("membership_type") == "essentials":
+        return ESSENTIALS_MAX_POSTS
+    return FB_SEARCH_MAX_POSTS
+
+
 async def _require_essentials(update: Update) -> bool:
     """Gate for Essentials-only commands (saving posts, the /watch digest).
     Basic users get an upgrade prompt. Fails open on DB errors, same reasoning
@@ -385,7 +405,8 @@ async def run_keyword_search(update: Update, context: ContextTypes.DEFAULT_TYPE,
             await asyncio.to_thread(filter_posts, cached, keyword) if cached else []
         )
         if not matches:
-            posts = await fetch_regional_posts(keyword)
+            max_posts = await _max_posts_for(str(update.effective_user.id))
+            posts = await fetch_regional_posts(keyword, max_posts=max_posts)
             buyers = await _classify_buyers(posts)
             await _save_buyers(buyers)
             matches = await asyncio.to_thread(filter_posts, buyers, keyword)
@@ -423,6 +444,7 @@ async def run_group_search(
             return
 
     await msg.reply_text("🔎 Getting the latest buyer posts from your group(s)…")
+    max_posts = await _max_posts_for(str(update.effective_user.id))
     shown, seen_ids = [], set()
     try:
         for gid in group_ids:
@@ -431,7 +453,7 @@ async def run_group_search(
                 repo.list_group_posts_since, gid, 1, 50, "buyer"
             )
             if not cached:
-                posts = await fetch_group_posts(gid, keyword="")
+                posts = await fetch_group_posts(gid, keyword="", max_posts=max_posts)
                 buyers = await _classify_buyers(posts)
                 await _save_buyers(buyers, group_id=gid)
                 cached = buyers

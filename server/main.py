@@ -26,6 +26,7 @@ from api.saved import router as saved_router
 from api.search import router as search_router
 from api.telegram_link import router as telegram_link_router
 from api.telegram_webhook import router as telegram_webhook_router
+from api.fb_scraper import router as group_search_router
 from config import (
     CORS_ORIGIN_REGEX,
     CORS_ORIGINS,
@@ -100,6 +101,7 @@ app.include_router(saved_router)
 app.include_router(telegram_link_router)
 app.include_router(telegram_webhook_router)
 app.include_router(account_router)
+app.include_router(group_search_router)
 
 
 @app.get("/")
@@ -117,4 +119,5 @@ if __name__ == "__main__":
     import os
 
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=int(os.environ["PORT"]))

@@ -5,8 +5,6 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # --- Facebook scrapers ---
-RAPID_API_HOST = os.getenv("RAPID_API_HOST")
-RAPID_API_KEY = os.getenv("RAPID_API_KEY")
 APIFY_API_TOKEN = os.getenv("APIFY_API_TOKEN")
 
 # Default Facebook group the bot scrapes when the user does not supply one.
@@ -16,6 +14,8 @@ FB_GROUP_ID = os.getenv("FB_GROUP_ID", "")
 FB_SEARCH_LOCATION = os.getenv("FB_SEARCH_LOCATION", "Ulaanbaatar, Mongolia")
 # NOTE: free Apify accounts are hard-capped at 5 results per run by the actor.
 FB_SEARCH_MAX_POSTS = int(os.getenv("FB_SEARCH_MAX_POSTS", "20"))
+# Essentials users get a larger scrape budget per request than the default.
+ESSENTIALS_MAX_POSTS = int(os.getenv("ESSENTIALS_MAX_POSTS", "50"))
 
 # --- Telegram bot ---
 TG_BOT_TOKEN = os.getenv("TG_BOT_TOKEN")

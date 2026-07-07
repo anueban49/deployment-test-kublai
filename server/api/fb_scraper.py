@@ -1,26 +1,44 @@
-import http.client
-import json
 import logging
-from urllib.parse import urlencode
 
+from apify_client import ApifyClient
 from fastapi import APIRouter, HTTPException, Query
 
-from config import RAPID_API_HOST, RAPID_API_KEY
+from config import APIFY_API_TOKEN, FB_SEARCH_MAX_POSTS
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
+client = ApifyClient(APIFY_API_TOKEN)
 
-def _simplify(post: dict) -> dict:
-    """Keep only the fields we care about from a raw group post."""
-    author = post.get("author") or {}
+# Group posts scraper. Takes two inputs: `group_url` (string) and
+# `max_posts` (integer).
+ACTOR_ID = "danek/facebook-groups-posts-scraper"
+
+
+def _images(item: dict) -> list[dict]:
+    """Collect photo URLs from the single `image` field and `album_preview`."""
+    images = []
+    if item.get("image"):
+        images.append({"url": item["image"], "ocr_text": None})
+    for photo in item.get("album_preview") or []:
+        if isinstance(photo, dict) and photo.get("image_file_uri"):
+            images.append({"url": photo["image_file_uri"], "ocr_text": None})
+    return images
+
+
+def _simplify(item: dict) -> dict:
+    """Trim a raw danek group post to the same shape the other scrapers return."""
+    author = item.get("author") or {}
     return {
-        "post_id": post.get("post_id"),
-        "url": post.get("url"),
-        "message": post.get("message"),
-        "message_rich": post.get("message_rich"),
-        "timestamp": post.get("timestamp"),
+        "post_id": item.get("post_id"),
+        "url": item.get("url"),
+        "message": item.get("message"),
+        "message_rich": item.get("message_rich"),
+        "timestamp": item.get("timestamp"),
+        "images": _images(item),
+        "reactions_count": item.get("reactions_count"),
+        "comments_count": item.get("comments_count"),
         "author": {
             "id": author.get("id"),
             "name": author.get("name"),
@@ -30,39 +48,34 @@ def _simplify(post: dict) -> dict:
     }
 
 
+# Sync endpoint: FastAPI runs it in a threadpool, so the long-running (blocking)
+# Apify actor call does not block the event loop.
 @router.get("/group")
-async def get_facebook_posts(
+def get_facebook_posts(
     group_id: str = Query(..., description="Facebook group id to fetch posts from"),
     query: str = Query("", description="Optional text to filter the posts by"),
+    max_posts: int = Query(None, ge=1, le=100, description="Max posts to fetch"),
 ):
-    logger.info("Fetching Facebook group posts: group_id=%r query=%r", group_id, query)
+    max_posts = max_posts or FB_SEARCH_MAX_POSTS
+    logger.info(
+        "Running Apify group scraper: group_id=%r query=%r max_posts=%d",
+        group_id, query, max_posts,
+    )
 
-    headers = {
-        "x-rapidapi-key": RAPID_API_KEY,
-        "x-rapidapi-host": RAPID_API_HOST,
-        "Content-Type": "application/json",
+    run_input = {
+        "group_url": f"https://www.facebook.com/groups/{group_id}",
+        "max_posts": max_posts,
     }
-    params = {"group_id": group_id, "sorting_order": "CHRONOLOGICAL"}
-    path = "/group/posts?" + urlencode(params)
 
-    conn = http.client.HTTPSConnection(RAPID_API_HOST)
     try:
-        conn.request("GET", path, headers=headers)
-        res = conn.getresponse()
-        raw = res.read().decode("utf-8")
-    except OSError:
-        logger.exception("Request to facebook-scraper3 failed")
-        raise HTTPException(status_code=502, detail="Failed to reach upstream API")
-    finally:
-        conn.close()
+        run = client.actor(ACTOR_ID).call(run_input=run_input)
+        items = list(client.dataset(run.default_dataset_id).iterate_items())
+    except Exception:
+        logger.exception("Apify group scraper actor run failed")
+        raise HTTPException(status_code=502, detail="Failed to fetch posts from Apify")
 
-    if res.status != 200:
-        logger.error("facebook-scraper3 returned %s: %s", res.status, raw)
-        raise HTTPException(status_code=res.status, detail=raw)
-
-    # 1. Fetch all posts and trim each to the fields we care about.
-    payload = json.loads(raw)
-    posts = [_simplify(post) for post in payload.get("posts", [])]
+    # 1. Trim each post to the fields we care about.
+    posts = [_simplify(item) for item in items]
 
     # 2. If a query is supplied, filter by words appearing in the message text.
     if query:
@@ -73,5 +86,5 @@ async def get_facebook_posts(
             or needle in (post["message_rich"] or "").casefold()
         ]
 
-    logger.info("Facebook group posts request succeeded (%d posts)", len(posts))
+    logger.info("Apify group scraper succeeded (%d posts)", len(posts))
     return {"posts": posts}
